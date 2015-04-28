@@ -25,9 +25,12 @@ package com.silverpeas.blog.control;
 
 import com.silverpeas.blog.BlogContentManager;
 import com.silverpeas.blog.dao.PostDAO;
+import com.silverpeas.blog.dao.PostRepository;
 import com.silverpeas.blog.model.Archive;
 import com.silverpeas.blog.model.BlogRuntimeException;
 import com.silverpeas.blog.model.Category;
+import com.silverpeas.blog.model.Post;
+import com.silverpeas.blog.model.PostCriteria;
 import com.silverpeas.blog.model.PostDetail;
 import com.silverpeas.blog.notification.BlogUserNotification;
 import com.silverpeas.comment.model.Comment;
@@ -103,6 +106,8 @@ public class DefaultBlogService implements BlogService {
   private PdcClassificationService pdcClassificationService;
   @Inject
   private PdcSubscriptionManager pdcSubscriptionManager;
+  @Inject
+  private PostRepository postRepository;
 
   @Override
   public PostDetail getContentById(String contentId) {
@@ -153,10 +158,12 @@ public class DefaultBlogService implements BlogService {
       if (StringUtil.isDefined(post.getCategoryId())) {
         setCategory(pk, post.getCategoryId());
       }
+      String htmlContent =
+          StringUtil.isDefined(post.getContent()) ? post.getContent() : StringUtil.EMPTY;
 
       // Create empty wysiwyg content
       WysiwygController
-          .createUnindexedFileAndAttachment("", pk, pub.getCreatorId(), pub.getLanguage());
+          .createUnindexedFileAndAttachment(htmlContent, pk, pub.getCreatorId(), pub.getLanguage());
 
       // Create silver content
       createSilverContent(con, pub, pub.getCreatorId());
@@ -305,12 +312,11 @@ public class DefaultBlogService implements BlogService {
       // recherche de la date d'evenement
       Date dateEvent;
       try (Connection con = openConnection()) {
-        dateEvent = com.silverpeas.blog.dao.PostDAO.getDateEvent(con, publication.getPK().getId());
+        dateEvent = PostDAO.getDateEvent(con, publication.getPK().getId());
       }
 
       PostDetail post = new PostDetail(publication, cat, comments.size(), dateEvent);
       post.setCreatorName(publication.getCreator().getDisplayedName());
-
       return post;
     } catch (Exception e) {
       throw new BlogRuntimeException("DefaultBlogService.getPost()",
@@ -323,7 +329,7 @@ public class DefaultBlogService implements BlogService {
     PublicationPK pubPK = new PublicationPK("useless", instanceId);
 
     Collection<PostDetail> posts = new ArrayList<>();
-    try(Connection con = openConnection()) {
+    try (Connection con = openConnection()) {
       // rechercher les publications classée par date d'évènement
       Collection<String> lastEvents = PostDAO.getAllEvents(con, instanceId);
       Collection<PublicationDetail> publications =
@@ -340,6 +346,17 @@ public class DefaultBlogService implements BlogService {
       throw new BlogRuntimeException("DefaultBlogService.getAllPosts()",
           SilverpeasRuntimeException.ERROR, "blog.EX_GET_ALL_POST", e);
     }
+  }
+
+  @Override
+  public List<PostDetail> getPaginatedPosts(final String instanceId,
+      final PostCriteria postCriteria) {
+    List<Post> posts = postRepository.getPaginatedPosts(postCriteria);
+    List<PostDetail> postDetails = new ArrayList<>();
+    for (Post post : posts) {
+      postDetails.add(getContentById(post.getId()));
+    }
+    return postDetails;
   }
 
   @Override

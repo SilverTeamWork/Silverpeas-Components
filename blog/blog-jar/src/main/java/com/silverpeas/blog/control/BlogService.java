@@ -23,12 +23,10 @@
  */
 package com.silverpeas.blog.control;
 
-import java.util.Collection;
-import java.util.Date;
-
 import com.silverpeas.ApplicationService;
 import com.silverpeas.blog.model.Archive;
 import com.silverpeas.blog.model.Category;
+import com.silverpeas.blog.model.PostCriteria;
 import com.silverpeas.blog.model.PostDetail;
 import com.silverpeas.comment.model.Comment;
 import com.silverpeas.pdc.model.PdcClassification;
@@ -36,6 +34,10 @@ import com.stratelia.webactiv.node.model.NodeDetail;
 import com.stratelia.webactiv.node.model.NodePK;
 import com.stratelia.webactiv.publication.model.PublicationPK;
 import org.silverpeas.util.ServiceProvider;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Services provided by the Blog Silverpeas component.
@@ -55,7 +57,9 @@ public interface BlogService extends ApplicationService<PostDetail> {
   public void deletePost(String postId, String instanceId);
 
   public Collection<PostDetail> getAllPosts(String instanceId);
-  
+
+  public List<PostDetail> getPaginatedPosts(String instanceId, PostCriteria postCriteria);
+
   public Collection<PostDetail> getAllValidPosts(String instanceId, int nbReturned);
 
   public Date getDateEvent(String pubId);
@@ -63,12 +67,12 @@ public interface BlogService extends ApplicationService<PostDetail> {
   public Collection<PostDetail> getPostsByCategory(String categoryId, String instanceId);
 
   public Collection<PostDetail> getPostsByArchive(String beginDate, String endDate,
-          String instanceId);
+      String instanceId);
 
   public Collection<PostDetail> getPostsByDate(String date, String instanceId);
 
   public Collection<PostDetail> getResultSearch(String word, String userId, String spaceId,
-          String instanceId);
+      String instanceId);
 
   public String createCategory(final Category category);
 
@@ -93,7 +97,7 @@ public interface BlogService extends ApplicationService<PostDetail> {
   public boolean isSubscribed(final String userId, final String instanceId);
 
   public void sendSubscriptionsNotification(final NodePK fatherPK, PostDetail post, Comment comment,
-          String type, String senderId);
+      String type, String senderId);
 
   public void draftOutPost(final PostDetail post);
 }
