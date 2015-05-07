@@ -69,6 +69,14 @@ public class PostEntity implements HATEOASWebEntity {
   @XmlElement
   private int nbComments;
   @XmlElement
+  private Date createDate;
+  @XmlElement
+  private String creator;
+  @XmlElement
+  private Date updateDate;
+  @XmlElement
+  private String updater;
+  @XmlElement
   private List<LinkMetadataEntity> links;
 
 
@@ -86,7 +94,14 @@ public class PostEntity implements HATEOASWebEntity {
     this.title = postDetail.getTitle();
     this.content = postDetail.getContent();
     this.nbComments = postDetail.getNbComments();
+//    this.dateEvent = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mmX")
+//        .withZone(ZoneOffset.UTC)
+//        .format(postDetail.getDateEvent().toInstant());
     this.dateEvent = postDetail.getDateEvent();
+    this.creator = postDetail.getCreatorName();
+    this.createDate = postDetail.getCreationDate();
+    this.updater = postDetail.getUpdater().getDisplayedName();
+    this.updateDate = postDetail.getUpdatedDate();
   }
 
   /**
@@ -113,6 +128,11 @@ public class PostEntity implements HATEOASWebEntity {
     pub.setCreatorName(ud.getDisplayedName());
     pub.setCreationDate(new Date());
     pub.setIndexOperation(IndexManager.NONE);
+/*
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mmX")
+        .withZone(ZoneOffset.UTC);
+    LocalDate localDate = LocalDate.parse(getDateEvent(), formatter);
+*/
     PostDetail newPost = new PostDetail(pub, categoryId, getDateEvent());
     newPost.setContent(this.content);
     return newPost;
@@ -174,6 +194,38 @@ public class PostEntity implements HATEOASWebEntity {
 
   public void setNbComments(final int nbComments) {
     this.nbComments = nbComments;
+  }
+
+  public Date getCreateDate() {
+    return createDate;
+  }
+
+  public void setCreateDate(final Date createDate) {
+    this.createDate = createDate;
+  }
+
+  public Date getUpdateDate() {
+    return updateDate;
+  }
+
+  public void setUpdateDate(final Date updateDate) {
+    this.updateDate = updateDate;
+  }
+
+  public String getCreator() {
+    return creator;
+  }
+
+  public void setCreator(final String creator) {
+    this.creator = creator;
+  }
+
+  public String getUpdater() {
+    return updater;
+  }
+
+  public void setUpdater(final String updater) {
+    this.updater = updater;
   }
 
   /**

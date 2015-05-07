@@ -47,9 +47,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.net.URI;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -266,11 +268,13 @@ public class PostResource extends RESTWebService {
     PublicationDetail pub = updatedPost.getPublication();
     pub.setName(postToUpdate.getTitle());
     pub.setUpdaterId(getUserDetail().getId());
+    pub.setUpdateDate(new Date());
     if (pub.isDraft()) {
       pub.setIndexOperation(IndexManager.NONE);
     }
     //updatedPost.setCategoryId(postToUpdate.getCategoryId());
     updatedPost.setDateEvent(postToUpdate.getDateEvent());
+    //Date.from(ZonedDateTime.parse(postToUpdate.getDateEvent()).toInstant())
     updatedPost.setContent(postToUpdate.getContent());
     return updatedPost;
   }

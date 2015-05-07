@@ -31,6 +31,7 @@ import com.stratelia.silverpeas.peasCore.URLManager;
 import com.stratelia.webactiv.beans.admin.UserDetail;
 import com.stratelia.webactiv.publication.model.PublicationDetail;
 import org.silverpeas.accesscontrol.ComponentAccessControl;
+import org.silverpeas.core.admin.OrganizationControllerProvider;
 import org.silverpeas.wysiwyg.control.WysiwygController;
 
 import java.util.Date;
@@ -140,6 +141,16 @@ public final class PostDetail implements SilverpeasContent {
     }
 
     return null;
+  }
+
+  public Date getUpdatedDate() {
+    return publication.getUpdateDate();
+  }
+
+  public UserDetail getUpdater() {
+    UserDetail updater = OrganizationControllerProvider.getOrganisationController()
+        .getUserDetail(publication.getUpdaterId());
+    return updater;
   }
 
   @Override
