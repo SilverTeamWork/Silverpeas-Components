@@ -44,7 +44,7 @@ public class PostJpaManager extends JpaBasicEntityManager<Post, ExternalIntegerI
     NamedParameters params = newNamedParameters().add("instanceId", postCriteria.getInstanceId());
     SimpleQueryCriteria queryCriteria = new SimpleQueryCriteria(params);
     queryCriteria.clause().add("instanceId = :instanceId");
-    queryCriteria.clause().orderBy("pubId desc");
+    queryCriteria.clause().orderBy("dateEvent desc");
     queryCriteria.withPagination(postCriteria.getPaginationCriterion());
     return findByCriteria(queryCriteria);
   }
