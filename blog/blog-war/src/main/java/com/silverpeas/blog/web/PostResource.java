@@ -29,6 +29,7 @@ import com.silverpeas.blog.control.BlogService;
 import com.silverpeas.blog.model.BlogRuntimeException;
 import com.silverpeas.blog.model.PostCriteria;
 import com.silverpeas.blog.model.PostDetail;
+import com.silverpeas.web.EntityList;
 import com.silverpeas.web.LinkMetadataEntity;
 import com.silverpeas.web.RESTWebService;
 import com.stratelia.webactiv.SilverpeasRole;
@@ -47,7 +48,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.net.URI;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -109,6 +109,12 @@ public class PostResource extends RESTWebService {
     links.add(LinkMetadataEntity
         .from(getUriInfo().getRequestUriBuilder().path(BLOG_POSTS_URI_PART).build())
         .withRel(BLOG_POSTS_URI_PART).linkTo(HttpMethod.GET));
+    // All the client which access this blog can access the list of posts
+    if (getGreaterUserRole().isGreaterThanOrEquals(SilverpeasRole.publisher)) {
+      links.add(LinkMetadataEntity
+          .from(getUriInfo().getRequestUriBuilder().path(BLOG_POSTS_URI_PART).build())
+          .withRel(BLOG_POSTS_URI_PART).linkTo(HttpMethod.POST));
+    }
     return links;
   }
 
@@ -177,7 +183,8 @@ public class PostResource extends RESTWebService {
   @GET
   @Path(BLOG_POSTS_URI_PART)
   @Produces(MediaType.APPLICATION_JSON)
-  public PostEntity[] getAllPosts(@DefaultValue("-1;-1") @QueryParam("page") final String page) {
+  public EntityList<PostEntity> getAllPosts(
+      @DefaultValue("-1;-1") @QueryParam("page") final String page) {
     try {
       PaginationPage paginationPage = fromPage(page);
       Collection<PostDetail> thePosts;
@@ -320,15 +327,15 @@ public class PostResource extends RESTWebService {
    * @param posts the posts to convert.
    * @return an array with the corresponding post entities.
    */
-  protected PostEntity[] asWebEntities(Collection<PostDetail> posts) {
-    PostEntity[] entities = new PostEntity[posts.size()];
-    int i = 0;
+  protected EntityList<PostEntity> asWebEntities(Collection<PostDetail> posts) {
+    List<PostEntity> entities = new ArrayList<>(posts.size());
     for (PostDetail post : posts) {
       URI postURI = getUriInfo().getRequestUriBuilder().path(post.getId()).replaceQuery("").build();
-      entities[i++] =
-          asWebEntity(post, identifiedBy(postURI), redirectTo(getPostOperations(postURI)));
+      entities
+          .add(asWebEntity(post, identifiedBy(postURI), redirectTo(getPostOperations(postURI))));
     }
-    return entities;
+    return EntityList.from(entities).withLinks(getBlogOperations())
+        .withURI(getUriInfo().getRequestUri());
   }
 
   /**
