@@ -22,7 +22,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.silverpeas.blog.web;
+package com.silverpeas.gallery.web;
+
 
 import com.silverpeas.web.ApplicationWebEntity;
 import com.stratelia.webactiv.beans.admin.ComponentInstLight;
@@ -31,25 +32,25 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-
 /**
- * The blog entity is a blog object that is exposed in the web as an entity (web entity). As
- * such, it publishes only some of its attributes It represents a blog application in Silverpeas
- * with some additional information such as the URI for accessing it.
+ * The gallery entity is a gallery object that is exposed in the web as an entity (web
+ * entity). As such, it publishes only some of its attributes It represents a gallery
+ * application in Silverpeas with some additional information such as the URI for accessing it.
+ * @author ebonnet
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class BlogEntity extends ApplicationWebEntity<BlogEntity> {
+public class GalleryEntity extends ApplicationWebEntity<GalleryEntity> {
 
-  public static BlogEntity fromComponentInstance(ComponentInstLight componentInst) {
-    return new BlogEntity(componentInst);
+  public static GalleryEntity fromComponentInstance(ComponentInstLight componentInst) {
+    return new GalleryEntity(componentInst);
   }
 
   /**
    * Default constructor
    * @param componentInst
    */
-  public BlogEntity(ComponentInstLight componentInst) {
+  public GalleryEntity(ComponentInstLight componentInst) {
     super(componentInst);
   }
 

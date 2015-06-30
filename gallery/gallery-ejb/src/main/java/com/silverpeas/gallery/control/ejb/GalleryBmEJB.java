@@ -63,7 +63,6 @@ import org.silverpeas.util.DBUtil;
 import org.silverpeas.util.exception.SilverpeasException;
 import org.silverpeas.util.exception.SilverpeasRuntimeException;
 
-import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.transaction.Transactional;
@@ -118,7 +117,7 @@ public class GalleryBmEJB implements GalleryBm {
       final Collection<NodeDetail> nodes = nodeService.getSubTree(nodePK);
       final List<AlbumDetail> albums = new ArrayList<>(nodes.size());
       for (final NodeDetail node : nodes) {
-        albums.add(new AlbumDetail(node));
+        albums.add(getAlbum(node.getNodePK()));
       }
       return albums;
     } catch (final Exception e) {
