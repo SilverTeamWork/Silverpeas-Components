@@ -303,6 +303,7 @@
     <module>scheduleEvent</module>
     <module>suggestionBox</module>
     <module>spaceMembers</module>
+    <module>wiki</module>
   </modules>
 
 </project>

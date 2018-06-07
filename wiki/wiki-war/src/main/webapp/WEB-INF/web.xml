@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2000 - 2018 Silverpeas
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    As a special exception to the terms and conditions of version 3.0 of
+    the GPL, you may redistribute this Program in connection with Free/Libre
+    Open Source Software ("FLOSS") applications as described in Silverpeas's
+    FLOSS exception.  You should have recieved a copy of the text describing
+    the FLOSS exception, and it is also available here:
+    "http://www.silverpeas.com/legal/licensing"
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+-->
+<web-app>
+  <display-name>Wiki War</display-name>
+  <description>The Silverpeas Wiki Web Application</description>
+
+  <!-- Resource bundle default location -->
+  <context-param>
+    <param-name>javax.servlet.jsp.jstl.fmt.localizationContext</param-name>
+    <param-value>templates.default</param-value>
+  </context-param>
+
+  <filter>
+    <filter-name>WikiServletFilter</filter-name>
+    <filter-class>org.silverpeas.components.wiki.jspwiki.filters.SilverWikiServletFilter</filter-class>
+  </filter>
+  <filter>
+    <filter-name>WikiJSPFilter</filter-name>
+    <filter-class>org.silverpeas.components.wiki.jspwiki.filters.SilverWikiJSPFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>WikiServletFilter</filter-name>
+    <url-pattern>/wiki/attach/*</url-pattern>
+    <url-pattern>/wiki/atom/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>WikiJSPFilter</filter-name>
+    <url-pattern>/Rwiki/*</url-pattern>
+    <url-pattern>/wiki/jsp/*.jsp</url-pattern>
+  </filter-mapping>
+
+  <!--
+      HttpSessionListener used for managing WikiSession's.
+    -->
+  <listener>
+    <listener-class>org.apache.wiki.auth.SessionMonitor</listener-class>
+  </listener>
+
+  <!-- WikiAjaxDispatcherServlet -->
+  <servlet>
+    <servlet-name>WikiAjaxDispatcherServlet</servlet-name>
+    <servlet-class>org.silverpeas.components.wiki.jspwiki.servlets.SilverWikiAjaxDispatcherServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <!-- Atom Publishing Protocol -->
+  <servlet>
+    <servlet-name>ATOM</servlet-name>
+    <servlet-class>org.apache.wiki.rpc.atom.AtomAPIServlet</servlet-class>
+  </servlet>
+
+  <!-- Now the default request router to the Wiki web controller -->
+  <servlet>
+    <display-name>WikiRequestRouter</display-name>
+    <servlet-name>WikiRequestRouter</servlet-name>
+    <servlet-class>org.silverpeas.core.web.mvc.webcomponent.WebComponentRequestRouter</servlet-class>
+    <init-param>
+      <param-name>WebComponentController</param-name>
+      <param-value>org.silverpeas.components.wiki.control.WikiWebController</param-value>
+    </init-param>
+  </servlet>
+
+  <!--
+      Attachment exchange handler.
+    -->
+
+  <servlet>
+    <servlet-name>AttachmentServlet</servlet-name>
+    <servlet-class>org.silverpeas.components.wiki.jspwiki.servlets.SilverAttachmentServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>AttachmentServlet</servlet-name>
+    <url-pattern>/wiki/attach/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>WikiRequestRouter</servlet-name>
+    <url-pattern>/Rwiki/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>WikiAjaxDispatcherServlet</servlet-name>
+    <url-pattern>/wiki/jsp/ajax/*</url-pattern>
+    <url-pattern>/wiki/jsp/admin/ajax/*</url-pattern>
+  </servlet-mapping>
+</web-app>

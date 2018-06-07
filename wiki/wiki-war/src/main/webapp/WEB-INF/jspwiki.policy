@@ -1,0 +1,56 @@
+// The first policy block grants privileges that all users need, regardless of
+// the roles or groups they belong to. Everyone can register with the wiki and
+// log in. Everyone can edit their profile after they authenticate.
+// Everyone can also view all wiki pages unless otherwise protected by an ACL.
+// If that seems too loose for your needs, you can restrict page-viewing
+// privileges by moving the PagePermission 'view' grant to one of the other blocks.
+
+grant principal org.apache.wiki.auth.authorize.Role "All" {
+    permission org.apache.wiki.auth.permissions.PagePermission "*:*", "view";
+    permission org.apache.wiki.auth.permissions.WikiPermission "*", "editPreferences";
+    permission org.apache.wiki.auth.permissions.WikiPermission "*", "editProfile";
+    permission org.apache.wiki.auth.permissions.WikiPermission "*", "login";
+};
+
+// The second policy is for all the users in Silverpeas that have no specific roles in
+// the wiki. In that case, they are considered as authenticated users in JSPWiki but with the
+// All privileges. By default, all authenticated users playing or not a role in Silverpeas are
+// considered as authenticated in JSPWiki.
+
+grant principal org.apache.wiki.auth.authorize.Role "Authenticated" {
+};
+
+// This third policy is for users playing the role of reader in the wiki. Those users have all
+// the basic privileges as defined in the All role.
+
+grant principal org.apache.wiki.auth.authorize.Role "Reader" {
+};
+
+
+// Contributor users can do most things: view, create, edit and
+// comment on all pages; upload files to existing ones; create and edit
+// wiki groups; and rename existing pages. Authenticated users can also
+// edit groups they are members of.
+
+grant principal org.apache.wiki.auth.authorize.Role "Contributor" {
+    permission org.apache.wiki.auth.permissions.PagePermission "*:*", "modify,rename";
+    permission org.apache.wiki.auth.permissions.GroupPermission "*:*", "view";
+    permission org.apache.wiki.auth.permissions.GroupPermission "*:<groupmember>", "edit";
+    permission org.apache.wiki.auth.permissions.WikiPermission "*", "createPages,createGroups";
+};
+
+
+// Administrators (principals or roles possessing AllPermission)
+// are allowed to delete any page, and can edit, rename and delete
+// groups. You should match the permission target (here, 'JSPWiki')
+// with the value of the 'jspwiki.applicationName' property in
+// jspwiki.properties. Two administative groups are set up below:
+// the wiki group "Admin" (stored by default in wiki page GroupAdmin)
+// and the container role "Admin" (managed by the web container).
+
+grant principal org.apache.wiki.auth.GroupPrincipal "Admin" {
+    permission org.apache.wiki.auth.permissions.AllPermission "*";
+};
+grant principal org.apache.wiki.auth.authorize.Role "Admin" {
+    permission org.apache.wiki.auth.permissions.AllPermission "*";
+};
