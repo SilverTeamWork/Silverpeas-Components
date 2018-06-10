@@ -24,27 +24,36 @@
 
 package org.silverpeas.components.wiki;
 
-import org.silverpeas.core.initialization.Initialization;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 /**
- * Representation of the Wiki application. It is just used to allocate and to deallocate all
- * of the resources required by all the Wiki application instances when the Silverpeas platform
- * bootstraps or shutdowns.
+ * Bootstraps at Silverpeas startup a {@link SilverWikiEngine} instance in place of the
+ * {@link org.apache.wiki.WikiEngine} one in order to serve all the Wiki application instances
+ * deployed in the Silverpeas platform.
+ * It shutdowns also the {@link SilverWikiEngine} instance at the stop of Silverpeas.
  * @author mmoquillon
  */
-public class WikiInitialization implements Initialization {
+public class WikiEngineBootstrap implements ServletContextListener {
+
+  private SilverWikiEngine wikiEngine;
+
+  /**
+   * Creates and initializes a {@link SilverWikiEngine} instance.
+   * @param sce the event about the initialization of the servlet context.
+   */
   @Override
-  public void init() throws Exception {
-    // nothing to initialize
+  public void contextInitialized(final ServletContextEvent sce) {
+    wikiEngine = SilverWikiEngine.getInstance(sce.getServletContext());
   }
 
   /**
-   * Shutdowns all of the {@link SilverWikiEngine} instances that were allocated for each
-   * available Wiki application instance in the Silverpeas platform.
+   * Shutdown the {@link SilverWikiEngine} instance.
+   * @param sce the event about the end of the servlet context.
    */
   @Override
-  public void release() {
-    SilverWikiEngine.shutdownAll();
+  public void contextDestroyed(final ServletContextEvent sce) {
+    wikiEngine.shutdown();
   }
 }
   

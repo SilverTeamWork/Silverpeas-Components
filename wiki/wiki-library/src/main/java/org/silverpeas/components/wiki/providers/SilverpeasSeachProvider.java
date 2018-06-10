@@ -46,6 +46,7 @@ import org.silverpeas.core.index.search.model.MatchingIndexEntry;
 import org.silverpeas.core.index.search.model.ParseException;
 import org.silverpeas.core.index.search.model.QueryDescription;
 import org.silverpeas.core.index.search.model.SearchResult;
+import org.silverpeas.core.util.StringUtil;
 import org.silverpeas.core.util.logging.SilverLogger;
 
 import java.io.File;
@@ -64,13 +65,15 @@ import java.util.Properties;
  */
 public class SilverpeasSeachProvider implements SearchProvider {
 
+  private WikiEngine wikiEngine;
+
   @Override
   public void pageRemoved(final WikiPage page) {
     Objects.requireNonNull(page);
+    requiresWikiInstanceId();
     try {
-      SilverWikiEngine wikiEngine = SilverWikiEngine.getFromCache();
       IndexEngineProxy.removeIndexEntry(
-          new IndexEntryKey(wikiEngine.getWikiInstanceId(), page.getClass().getSimpleName(),
+          new IndexEntryKey(getWikiInstanceId(), page.getClass().getSimpleName(),
               page.getName()));
     } catch (InternalWikiException e) {
       logNotInSilverpeasWikiContext(e);
@@ -80,10 +83,10 @@ public class SilverpeasSeachProvider implements SearchProvider {
   @Override
   public void reindexPage(final WikiPage page) {
     Objects.requireNonNull(page);
+    requiresWikiInstanceId();
     try {
-      SilverWikiEngine wikiEngine = SilverWikiEngine.getFromCache();
       FullIndexEntry indexEntry =
-          new FullIndexEntry(wikiEngine.getWikiInstanceId(), page.getClass().getSimpleName(),
+          new FullIndexEntry(getWikiInstanceId(), page.getClass().getSimpleName(),
               page.getName());
       indexEntry.setLastModificationUser(page.getAuthor());
       indexEntry.setLastModificationDate(page.getLastModified());
@@ -113,7 +116,9 @@ public class SilverpeasSeachProvider implements SearchProvider {
   @Override
   public Collection findPages(final String query, final WikiContext wikiContext)
       throws ProviderException {
-    final SilverWikiEngine wikiEngine = SilverWikiEngine.getFromCache();
+    Objects.requireNonNull(query);
+    Objects.requireNonNull(wikiContext);
+    requiresWikiInstanceId();
     final AuthorizationManager auth = wikiEngine.getAuthorizationManager();
     final SearchEngine searchEngine = SearchEngineProvider.getSearchEngine();
     final QueryDescription queryTxt = new QueryDescription(query);
@@ -125,7 +130,7 @@ public class SilverpeasSeachProvider implements SearchProvider {
         final String pageType = result.getType();
         final String pageName = result.getId();
         final String wikiId = result.getInstanceId();
-        if (wikiEngine.getWikiInstanceId().equals(wikiId) &&
+        if (getWikiInstanceId().equals(wikiId) &&
             pageType.equals(WikiPage.class.getSimpleName())) {
           WikiPage page = wikiEngine.getPage(pageName, WikiPageProvider.LATEST_VERSION);
           PagePermission perm = new PagePermission(page, PagePermission.VIEW_ACTION);
@@ -142,12 +147,27 @@ public class SilverpeasSeachProvider implements SearchProvider {
 
   @Override
   public void initialize(final WikiEngine engine, final Properties properties) {
-    // nothing to do
+    this.wikiEngine = engine;
   }
 
   @Override
   public String getProviderInfo() {
     return "Silverpeas Wiki Search Provider";
+  }
+
+  private String getWikiInstanceId() {
+    String wikiId = "";
+    if (this.wikiEngine instanceof SilverWikiEngine) {
+      wikiId = ((SilverWikiEngine) this.wikiEngine).getWikiInstanceId();
+    }
+    return wikiId;
+  }
+
+  private void requiresWikiInstanceId() {
+    if (StringUtil.isNotDefined(getWikiInstanceId())) {
+      throw new IllegalArgumentException(
+          "The Search provider is invoked out of a Wiki instance context");
+    }
   }
 
   private void logNotInSilverpeasWikiContext(final InternalWikiException e) {

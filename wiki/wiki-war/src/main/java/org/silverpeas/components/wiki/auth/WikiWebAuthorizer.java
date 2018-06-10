@@ -60,6 +60,8 @@ public class WikiWebAuthorizer implements WebAuthorizer {
           .flatMap(Stream::of)
           .toArray(Principal[]::new);
 
+  private SilverWikiEngine engine;
+
   @Override
   public boolean isUserInRole(final HttpServletRequest request, final Principal role) {
     User user = User.getCurrentRequester();
@@ -81,7 +83,7 @@ public class WikiWebAuthorizer implements WebAuthorizer {
 
   @Override
   public void initialize(final WikiEngine engine, final Properties props) {
-    // nothing to initialize
+    this.engine = (SilverWikiEngine) engine;
   }
 
   @Override
@@ -105,9 +107,8 @@ public class WikiWebAuthorizer implements WebAuthorizer {
     boolean isInRole = role == Role.AUTHENTICATED || role == Role.ALL;
     if (!isInRole) {
       // we check the roles the user plays in the wiki application instance
-      final String wikiId = SilverWikiEngine.getFromCache().getWikiInstanceId();
       Collection<SilverpeasRole> roles =
-          OrganizationController.get().getUserSilverpeasRolesOn(user, wikiId);
+          OrganizationController.get().getUserSilverpeasRolesOn(user, engine.getWikiInstanceId());
       isInRole = roles.stream()
           .map(r -> WikiRole.fromSilverpeasRole(r).getWikiRole())
           .anyMatch(r -> r.getName().equals(role.getName()));

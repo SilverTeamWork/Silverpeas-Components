@@ -43,14 +43,17 @@ import java.io.Writer;
 import java.util.Enumeration;
 
 /**
+ * The page context to use by the {@link WikiTemplateManager} objects and that takes into account
+ * the location of the JSPWiki's templates in Silverpeas. Indeed, the path of the templates is
+ * hardcoded in JSPWiki and we have to circumvent that.
  * @author mmoquillon
  */
 public class PageContextWrapper extends PageContext {
 
-  private final PageContext pageContext;
+  private final PageContext pageCtx;
 
   public PageContextWrapper(final PageContext pageContext) {
-    this.pageContext = pageContext;
+    this.pageCtx = pageContext;
   }
 
   @Override
@@ -58,159 +61,159 @@ public class PageContextWrapper extends PageContext {
       final ServletResponse response, final String errorPageURL, final boolean needsSession,
       final int bufferSize, final boolean autoFlush)
       throws IOException, IllegalStateException, IllegalArgumentException {
-    pageContext.initialize(servlet, request, response, errorPageURL, needsSession, bufferSize,
+    pageCtx.initialize(servlet, request, response, errorPageURL, needsSession, bufferSize,
         autoFlush);
   }
 
   @Override
   public void release() {
-    pageContext.release();
+    pageCtx.release();
   }
 
   @Override
   public HttpSession getSession() {
-    return pageContext.getSession();
+    return pageCtx.getSession();
   }
 
   @Override
   public Object getPage() {
-    return pageContext.getPage();
+    return pageCtx.getPage();
   }
 
   @Override
   public ServletRequest getRequest() {
-    return pageContext.getRequest();
+    return pageCtx.getRequest();
   }
 
   @Override
   public ServletResponse getResponse() {
-    return pageContext.getResponse();
+    return pageCtx.getResponse();
   }
 
   @Override
   public Exception getException() {
-    return pageContext.getException();
+    return pageCtx.getException();
   }
 
   @Override
   public ServletConfig getServletConfig() {
-    return pageContext.getServletConfig();
+    return pageCtx.getServletConfig();
   }
 
   @Override
   public ServletContext getServletContext() {
-    return new ServletContextWrapper(pageContext.getServletContext());
+    return new ServletContextWrapper(pageCtx.getServletContext());
   }
 
   @Override
   public void forward(final String relativeUrlPath) throws ServletException, IOException {
-    pageContext.forward(relativeUrlPath);
+    pageCtx.forward(relativeUrlPath);
   }
 
   @Override
   public void include(final String relativeUrlPath) throws ServletException, IOException {
-    pageContext.include(relativeUrlPath);
+    pageCtx.include(relativeUrlPath);
   }
 
   @Override
   public void include(final String relativeUrlPath, final boolean flush)
       throws ServletException, IOException {
-    pageContext.include(relativeUrlPath, flush);
+    pageCtx.include(relativeUrlPath, flush);
   }
 
   @Override
   public void handlePageException(final Exception e) throws ServletException, IOException {
-    pageContext.handlePageException(e);
+    pageCtx.handlePageException(e);
   }
 
   @Override
   public void handlePageException(final Throwable t) throws ServletException, IOException {
-    pageContext.handlePageException(t);
+    pageCtx.handlePageException(t);
   }
 
   @Override
   public BodyContent pushBody() {
-    return pageContext.pushBody();
+    return pageCtx.pushBody();
   }
 
   @Override
   public ErrorData getErrorData() {
-    return pageContext.getErrorData();
+    return pageCtx.getErrorData();
   }
 
   @Override
   public void setAttribute(final String name, final Object value) {
-    pageContext.setAttribute(name, value);
+    pageCtx.setAttribute(name, value);
   }
 
   @Override
   public void setAttribute(final String name, final Object value, final int scope) {
-    pageContext.setAttribute(name, value, scope);
+    pageCtx.setAttribute(name, value, scope);
   }
 
   @Override
   public Object getAttribute(final String name) {
-    return pageContext.getAttribute(name);
+    return pageCtx.getAttribute(name);
   }
 
   @Override
   public Object getAttribute(final String name, final int scope) {
-    return pageContext.getAttribute(name, scope);
+    return pageCtx.getAttribute(name, scope);
   }
 
   @Override
   public Object findAttribute(final String name) {
-    return pageContext.findAttribute(name);
+    return pageCtx.findAttribute(name);
   }
 
   @Override
   public void removeAttribute(final String name) {
-    pageContext.removeAttribute(name);
+    pageCtx.removeAttribute(name);
   }
 
   @Override
   public void removeAttribute(final String name, final int scope) {
-    pageContext.removeAttribute(name, scope);
+    pageCtx.removeAttribute(name, scope);
   }
 
   @Override
   public int getAttributesScope(final String name) {
-    return pageContext.getAttributesScope(name);
+    return pageCtx.getAttributesScope(name);
   }
 
   @Override
   public Enumeration<String> getAttributeNamesInScope(final int scope) {
-    return pageContext.getAttributeNamesInScope(scope);
+    return pageCtx.getAttributeNamesInScope(scope);
   }
 
   @Override
   public JspWriter getOut() {
-    return pageContext.getOut();
+    return pageCtx.getOut();
   }
 
   @Override
   public ExpressionEvaluator getExpressionEvaluator() {
-    return pageContext.getExpressionEvaluator();
+    return pageCtx.getExpressionEvaluator();
   }
 
   @Override
   public VariableResolver getVariableResolver() {
-    return pageContext.getVariableResolver();
+    return pageCtx.getVariableResolver();
   }
 
   @Override
   public ELContext getELContext() {
-    return pageContext.getELContext();
+    return pageCtx.getELContext();
   }
 
   @Override
   public JspWriter pushBody(final Writer writer) {
-    return pageContext.pushBody(writer);
+    return pageCtx.pushBody(writer);
   }
 
   @Override
   public JspWriter popBody() {
-    return pageContext.popBody();
+    return pageCtx.popBody();
   }
 }
   

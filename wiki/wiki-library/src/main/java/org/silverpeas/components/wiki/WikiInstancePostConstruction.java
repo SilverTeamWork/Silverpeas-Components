@@ -26,29 +26,30 @@ package org.silverpeas.components.wiki;
 
 import org.silverpeas.core.SilverpeasRuntimeException;
 import org.silverpeas.core.admin.component.ComponentInstancePostConstruction;
-import org.silverpeas.core.i18n.I18n;
 import org.silverpeas.core.util.logging.SilverLogger;
 
+import javax.inject.Named;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * Creates a new repository dedicated to receive the wiki pages of the newly spawned Wiki
  * application instance.
  * @author mmoquillon
  */
+@Named
 public class WikiInstancePostConstruction implements ComponentInstancePostConstruction {
 
   @Override
   public void postConstruct(final String componentInstanceId) {
     WikiSettings settings = new WikiSettings(componentInstanceId);
     try {
-      Files.createDirectories(Paths.get(settings.getWikiHomePath()));
-      Files.createDirectory(Paths.get(settings.getWikiPageDirPath()));
-      Files.createDirectory(Paths.get(settings.getWikiAttachmentDirPath()));
-      settings.createEditHelpPage(I18n.get().getDefaultLanguage());
+      settings.initialize();
     } catch (IOException e) {
+      try {
+        settings.cleanUp();
+      } catch (IOException e1) {
+        SilverLogger.getLogger(this).error(e);
+      }
       SilverLogger.getLogger(this).error(e);
       throw new SilverpeasRuntimeException(e);
     }

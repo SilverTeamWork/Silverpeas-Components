@@ -24,7 +24,7 @@
 
 package org.silverpeas.components.wiki.ui;
 
-import org.silverpeas.components.wiki.WikiSettings;
+import org.silverpeas.components.wiki.SilverWikiEngine;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
@@ -329,10 +329,11 @@ public class ServletContextWrapper implements ServletContext {
     return servletContext.getVirtualServerName();
   }
 
-  private final String fixWikiPath(final String path) {
+  private String fixWikiPath(final String path) {
     String fixedPath = path;
     if (path.startsWith("/templates")) {
-      fixedPath = WikiSettings.WIKI_BASE_DIR + path;
+      SilverWikiEngine engine = SilverWikiEngine.getInstance(this);
+      fixedPath = engine.getTemplatePath(path);
     }
     return fixedPath;
   }

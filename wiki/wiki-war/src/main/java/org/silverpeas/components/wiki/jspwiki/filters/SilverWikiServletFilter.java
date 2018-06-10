@@ -26,12 +26,11 @@ package org.silverpeas.components.wiki.jspwiki.filters;
 
 import org.apache.wiki.ui.WikiServletFilter;
 import org.silverpeas.components.wiki.SilverWikiEngine;
-import org.silverpeas.components.wiki.jspwiki.SilverWikiEngineProvider;
+import org.silverpeas.components.wiki.jspwiki.CurrentWikiInstanceSetter;
 import org.silverpeas.core.web.http.HttpRequest;
 
 import javax.inject.Inject;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -47,12 +46,7 @@ import java.io.IOException;
 public class SilverWikiServletFilter extends WikiServletFilter {
 
   @Inject
-  private SilverWikiEngineProvider engineProvider;
-
-  @Override
-  public void init(final FilterConfig config) {
-    // does nothing here: we don't setup the WikiEngine
-  }
+  private CurrentWikiInstanceSetter wikiSetter;
 
   /**
    * Retrieves the {@link SilverWikiEngine} instance for the current accessed Wiki application
@@ -76,7 +70,8 @@ public class SilverWikiServletFilter extends WikiServletFilter {
       // to be used by the JSPWiki business operations as expected
       ((HttpRequest) request).setDefaultBehavior();
     }
-    this.m_engine = engineProvider.getSilverWikiEngine(request);
+    // force the wiki engine initialization for the requested wiki instance if not yet
+    wikiSetter.setCurrentAccessedWiki(request);
     super.doFilter(request, response, chain);
   }
 }

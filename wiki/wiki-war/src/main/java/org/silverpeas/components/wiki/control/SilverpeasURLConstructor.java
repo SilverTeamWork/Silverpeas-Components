@@ -24,6 +24,7 @@
 
 package org.silverpeas.components.wiki.control;
 
+import org.apache.wiki.WikiEngine;
 import org.apache.wiki.url.DefaultURLConstructor;
 import org.silverpeas.components.wiki.SilverWikiEngine;
 import org.silverpeas.core.util.StringUtil;
@@ -31,6 +32,7 @@ import org.silverpeas.core.util.StringUtil;
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Properties;
 
 /**
  * URL constructor that will be used by the JSPWiki engine. Its gaols is to extend the
@@ -46,16 +48,22 @@ import java.net.URLDecoder;
 public class SilverpeasURLConstructor extends DefaultURLConstructor {
 
   @Override
+  public void initialize(final WikiEngine engine, final Properties properties) {
+    this.m_engine = engine;
+    this.m_pathPrefix = engine.getServletContext().getContextPath() + "/wiki/jsp";
+  }
+
+  @Override
   public String makeURL(final String context, final String name, final boolean absolute,
       final String parameters) {
-    initWithCurrentWikiEngine(context, name);
+    initByResource(context, name);
     return super.makeURL(context, name, absolute, parameters);
   }
 
   @Override
   public String parsePage(final String context, final HttpServletRequest request,
       final String encoding) throws UnsupportedEncodingException {
-    initWithCurrentWikiEngine(context, request.getRequestURI());
+    initByResource(context, request.getRequestURI());
     String page = super.parsePage(context, request, encoding);
     if (StringUtil.isDefined(page)) {
       // in the case of a path to an attachment, we have to decode it to be retrieved from the
@@ -83,15 +91,14 @@ public class SilverpeasURLConstructor extends DefaultURLConstructor {
    * @param resourceName the name of the resource for which an URL will be constructed. The resource
    * can be a path, a JSP, an URL endpoint identifying a Wiki service, ...
    */
-  private void initWithCurrentWikiEngine(final String context, final String resourceName) {
-    this.m_engine = SilverWikiEngine.getFromCache();
+  private void initByResource(final String context, final String resourceName) {
     this.m_pathPrefix = this.m_engine.getServletContext().getContextPath();
     if (!isAbsolutePath(resourceName)) {
       if (isJSP(resourceName) || isAttachmentEndpoint(resourceName) ||
           isSyndicationEndpoint(resourceName) || !context.isEmpty()) {
         this.m_pathPrefix = this.m_engine.getBaseURL();
       } else {
-        this.m_pathPrefix += "/wiki/jsp";
+        this.m_pathPrefix = ((SilverWikiEngine)this.m_engine).getWebPagesURL();
       }
     }
     this.m_pathPrefix += "/";

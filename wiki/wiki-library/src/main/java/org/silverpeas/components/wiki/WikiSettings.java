@@ -24,12 +24,20 @@
 
 package org.silverpeas.components.wiki;
 
+import org.silverpeas.core.admin.user.model.User;
+import org.silverpeas.core.i18n.I18n;
 import org.silverpeas.core.util.file.FileRepositoryManager;
+import org.silverpeas.core.util.file.FileUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Date;
+import java.util.Properties;
+
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 /**
  * Settings of a Wiki application
@@ -47,6 +55,12 @@ public class WikiSettings {
    * Name of the subdirectory in the wiki home directory that contains all the Wiki pages.
    */
   private static final String WIKI_PAGE_DIR = "pages";
+
+  /**
+   * Name of the subdirectory in the wiki page directory that contains all the versioning of the
+   * Wiki pages.
+   */
+  private static final String WIKI_VERSIONING_DIR = "OLD";
 
   /**
    * Name of the subdirectory in the wiki home directory that contains all the attachments of wiki
@@ -68,7 +82,7 @@ public class WikiSettings {
    * Constructs a {@link WikiSettings} object for the specified wiki application instance.
    * @param wikiInstanceId the unique identifier of a wiki instance.
    */
-  public WikiSettings(final String wikiInstanceId) {
+  WikiSettings(final String wikiInstanceId) {
     this.wikiHomePath = FileRepositoryManager.getAbsolutePath(wikiInstanceId);
   }
 
@@ -77,7 +91,7 @@ public class WikiSettings {
    * provided by the users will be added into it.
    * @return the path of the wiki instance home directory.
    */
-  public final String getWikiHomePath() {
+  final String getWikiHomePath() {
     return this.wikiHomePath;
   }
 
@@ -86,8 +100,17 @@ public class WikiSettings {
    * stored.
    * @return the path of the wiki's page directory.
    */
-  public final String getWikiPageDirPath() {
+  final String getWikiPageDirPath() {
     return Paths.get(this.wikiHomePath, WIKI_PAGE_DIR).toString();
+  }
+
+  /**
+   * Gets the absolute path of the directory into which the version history of the Wiki page is
+   * maintained.
+   * @return the path of the wiki's page versioning information directory.
+   */
+  final String getWikiPageVersioningDirPath() {
+    return Paths.get(this.wikiHomePath, WIKI_PAGE_DIR, WIKI_VERSIONING_DIR).toString();
   }
 
   /**
@@ -95,7 +118,7 @@ public class WikiSettings {
    * users will be stored.
    * @return the path of of the directory of all of the pages' attachments.
    */
-  public final String getWikiAttachmentDirPath() {
+  final String getWikiAttachmentDirPath() {
     return Paths.get(this.wikiHomePath, WIKI_ATTACHMENT_DIR).toString();
   }
 
@@ -103,8 +126,36 @@ public class WikiSettings {
    * Gets the maximum size supported by Silverpeas to upload the attachments.
    * @return the maximum size of the attachments supported by Silverpeas.
    */
-  public final long getAttachmentMaxSize() {
+  final long getAttachmentMaxSize() {
     return FileRepositoryManager.getUploadMaximumFileSize();
+  }
+
+  /**
+   * Initializes the directory layout of the underlying wiki application instance for use by
+   * JSPWiki. If the directory layout already exists, nothing is done.
+   * @throws IOException if an error occurs while initializing the directory layout to store the
+   * resources of the wiki application instance.
+   */
+  final void initialize() throws IOException {
+    if (!Files.exists(Paths.get(wikiHomePath))) {
+      Files.createDirectories(Paths.get(wikiHomePath));
+      Files.createDirectory(Paths.get(getWikiPageDirPath()));
+      Files.createDirectory(Paths.get(getWikiAttachmentDirPath()));
+      Files.createDirectory(Paths.get(getWikiPageVersioningDirPath()));
+      createEditHelpPage(I18n.get().getDefaultLanguage());
+    }
+  }
+
+  /**
+   * Cleans up the resources that were saved for the underlying wiki application instance such as
+   * the Wiki pages, the attachments, and so on. Actually it does delete the Wiki home directory
+   * of the wiki application instance.
+   * @throws IOException if an error occurs while cleaning up the wiki resources.
+   */
+  final void cleanUp() throws IOException {
+    if (Files.exists(Paths.get(wikiHomePath))) {
+      FileUtil.forceDeletion(new File(wikiHomePath));
+    }
   }
 
   /**
@@ -112,10 +163,20 @@ public class WikiSettings {
    * @param lang an ISO-639-1 code.
    * @throws IOException if an error occurs while creating the help page.
    */
-  public final void createEditHelpPage(final String lang) throws IOException {
+  private void createEditHelpPage(final String lang) throws IOException {
+    User author = User.getCurrentRequester();
+    if (author == null) {
+      author = User.getById("0");
+    }
     final InputStream input =
         getClass().getResourceAsStream(WIKI_RESOURCES_LOCATION + getSourceEditHelpPage(lang));
     Files.copy(input, Paths.get(getWikiPageDirPath(), getEditHelpPage()));
+    Files.createDirectory(Paths.get(getWikiPageVersioningDirPath(), EDIT_HELP_PAGE));
+    Properties props = new Properties();
+    props.setProperty("1.author", author.getDisplayedName());
+    props.store(Files.newOutputStream(
+        Paths.get(getWikiPageVersioningDirPath(), EDIT_HELP_PAGE, "page.properties"), CREATE_NEW),
+        (new Date()).toString());
   }
 
   private String getSourceEditHelpPage(final String lang) {

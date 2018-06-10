@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * @author mmoquillon
  */
 @Singleton
-public class SilverWikiEngineProvider {
+public class CurrentWikiInstanceSetter {
 
   private static final Pattern WIKI_ID_PATTERN = Pattern.compile("^wiki\\d+$");
 
@@ -49,21 +49,18 @@ public class SilverWikiEngineProvider {
   /**
    * Gets the {@link SilverWikiEngine} instance of the wiki instance targeted by the specified
    * HTTP request. If no {@link SilverWikiEngine} instance is allocated for the targeted wiki
-   * instance then creates it and initializes it.
+   * instance then creates it and initializes it. If not yet, it is cached for further use in
+   * the same processing thread.
    * @param request the incoming HTTP request.
    * @return the {@link SilverWikiEngine} instance that motorizes the targeted wiki instance.
    */
-  public SilverWikiEngine getSilverWikiEngine(final ServletRequest request) {
+  public void setCurrentAccessedWiki(final ServletRequest request) {
     final HttpServletRequest httpRequest = (HttpServletRequest) request;
     final String wikiId = webUtil.getComponentId(httpRequest)[1];
-    SilverWikiEngine engine;
-    if (StringUtil.isNotDefined(wikiId) || !WIKI_ID_PATTERN.matcher(wikiId).matches()) {
-      engine = SilverWikiEngine.getFromCache();
-    } else {
-      engine = SilverWikiEngine.getInstance(request.getServletContext(), wikiId);
-      engine.putInCache();
+    final SilverWikiEngine wikiEngine = SilverWikiEngine.getInstance(request.getServletContext());
+    if (StringUtil.isDefined(wikiId) && WIKI_ID_PATTERN.matcher(wikiId).matches()) {
+      wikiEngine.setCurrentWikiInstance(wikiId);
     }
-    return engine;
   }
 }
   

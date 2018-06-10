@@ -25,7 +25,6 @@
 package org.silverpeas.components.wiki.control;
 
 import org.apache.wiki.WikiSession;
-import org.apache.wiki.auth.SessionMonitor;
 import org.apache.wiki.auth.WikiSecurityException;
 import org.silverpeas.components.wiki.SilverWikiEngine;
 import org.silverpeas.core.admin.user.model.SilverpeasRole;
@@ -94,11 +93,9 @@ public class WikiWebController
   @Override
   protected void onInstantiation(final WikiWebRequestContext context) {
     final SilverWikiEngine wikiEngine =
-        SilverWikiEngine.getInstance(context.getRequest().getServletContext(),
-            context.getComponentInstanceId());
-    wikiEngine.putInCache();
-    WikiSession session =
-        SessionMonitor.getInstance(wikiEngine).find(context.getRequest().getSession());
+        SilverWikiEngine.getInstance(context.getRequest().getServletContext());
+    wikiEngine.setCurrentWikiInstance(context.getComponentInstanceId());
+    WikiSession session = WikiSession.getWikiSession(wikiEngine, context.getRequest());
     if (!session.isAuthenticated()) {
       try {
         if (!wikiEngine.getAuthenticationManager().login(context.getRequest())) {

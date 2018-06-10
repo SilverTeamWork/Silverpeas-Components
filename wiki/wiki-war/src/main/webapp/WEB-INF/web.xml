@@ -56,9 +56,11 @@
 
   <!--
       HttpSessionListener used for managing WikiSession's.
+      ServletContextListener used for bootstrapping our own wiki engine mechanism.
     -->
   <listener>
     <listener-class>org.apache.wiki.auth.SessionMonitor</listener-class>
+    <listener-class>org.silverpeas.components.wiki.WikiEngineBootstrap</listener-class>
   </listener>
 
   <!-- WikiAjaxDispatcherServlet -->

@@ -26,7 +26,7 @@ package org.silverpeas.components.wiki.jspwiki.servlets;
 
 import org.apache.wiki.attachment.AttachmentServlet;
 import org.silverpeas.components.wiki.SilverWikiEngine;
-import org.silverpeas.components.wiki.jspwiki.SilverWikiEngineProvider;
+import org.silverpeas.components.wiki.jspwiki.CurrentWikiInstanceSetter;
 
 import javax.inject.Inject;
 import javax.servlet.ServletConfig;
@@ -58,7 +58,7 @@ import java.io.IOException;
 public class SilverAttachmentServlet extends AttachmentServlet {
 
   @Inject
-  private SilverWikiEngineProvider engineProvider;
+  private CurrentWikiInstanceSetter wikiSetter;
 
   @Override
   public void init(final ServletConfig config) {
@@ -68,7 +68,8 @@ public class SilverAttachmentServlet extends AttachmentServlet {
   @Override
   public void doGet(final HttpServletRequest req, final HttpServletResponse res)
       throws IOException, ServletException {
-    SilverWikiEngine engine = engineProvider.getSilverWikiEngine(req);
+    wikiSetter.setCurrentAccessedWiki(req);
+    SilverWikiEngine engine = SilverWikiEngine.getInstance(req.getServletContext());
     super.init(new SilverServletConfig(engine.getServletContext()));
     super.doGet(req, res);
   }
@@ -76,7 +77,8 @@ public class SilverAttachmentServlet extends AttachmentServlet {
   @Override
   public void doPost(final HttpServletRequest req, final HttpServletResponse res)
       throws IOException, ServletException {
-    SilverWikiEngine engine = engineProvider.getSilverWikiEngine(req);
+    wikiSetter.setCurrentAccessedWiki(req);
+    SilverWikiEngine engine = SilverWikiEngine.getInstance(req.getServletContext());
     super.init(new SilverServletConfig(engine.getServletContext()));
     super.doPost(req, res);
   }

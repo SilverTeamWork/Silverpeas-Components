@@ -24,11 +24,9 @@
 
 package org.silverpeas.components.wiki.jspwiki.filters;
 
-import org.apache.wiki.InternalWikiException;
-import org.apache.wiki.WikiEngine;
 import org.apache.wiki.ui.WikiJSPFilter;
 import org.silverpeas.components.wiki.SilverWikiEngine;
-import org.silverpeas.components.wiki.jspwiki.SilverWikiEngineProvider;
+import org.silverpeas.components.wiki.jspwiki.CurrentWikiInstanceSetter;
 
 import javax.inject.Inject;
 import javax.servlet.FilterChain;
@@ -38,7 +36,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.lang.reflect.Field;
 
 /**
  * An extension of the {@link org.apache.wiki.ui.WikiJSPFilter} of the JSPWiki distribution.
@@ -50,14 +47,15 @@ import java.lang.reflect.Field;
 public class SilverWikiJSPFilter extends WikiJSPFilter {
 
   @Inject
-  private SilverWikiEngineProvider engineProvider;
+  private CurrentWikiInstanceSetter wikiSetter;
 
   @Inject
   private SilverWikiServletFilter filter;
 
   @Override
   public void init(final FilterConfig config) throws ServletException {
-    // does nothing here: we don't setup the WikiEngine
+    super.init(config);
+    filter.init(config);
   }
 
   /**
@@ -80,27 +78,11 @@ public class SilverWikiJSPFilter extends WikiJSPFilter {
       final FilterChain chain) throws IOException, ServletException {
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     if (httpRequest.getRequestURI().endsWith(".jsp")) {
-      this.m_engine = engineProvider.getSilverWikiEngine(request);
-      setUpInheritedFields(this.m_engine);
+      // force the wiki engine initialization for the requested wiki instance if not yet
+      wikiSetter.setCurrentAccessedWiki(request);
       super.doFilter(request, response, chain);
     } else {
       filter.doFilter(request, response, chain);
-    }
-  }
-
-  private void setUpInheritedFields(final WikiEngine wikiEngine) {
-    try {
-      final Field wikiEncoding = WikiJSPFilter.class.getDeclaredField("m_wiki_encoding");
-      wikiEncoding.setAccessible(true);
-      wikiEncoding.set(this, wikiEngine.getWikiProperties().getProperty(WikiEngine.PROP_ENCODING));
-
-      final Field useEncoding = WikiJSPFilter.class.getDeclaredField("useEncoding");
-      useEncoding.setAccessible(true);
-      useEncoding.set(this, !(Boolean.valueOf(wikiEngine.getWikiProperties()
-          .getProperty(WikiEngine.PROP_NO_FILTER_ENCODING, "false")
-          .trim())));
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new InternalWikiException(e);
     }
   }
 }

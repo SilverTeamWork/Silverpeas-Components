@@ -60,16 +60,13 @@ import java.util.Set;
 public class WikiLoginModule implements LoginModule {
 
   private Subject subject;
-  private CallbackHandler callbackHandler;
   private final Set<Principal> principals = new HashSet<>();
 
   @Override
   public void initialize(final Subject subject, final CallbackHandler callbackHandler,
       final Map<String, ?> sharedState, final Map<String, ?> options) {
     Objects.requireNonNull(subject, "The subject of an authentication cannot be null");
-    Objects.requireNonNull(callbackHandler, "The authentication callback handler must not be null");
     this.subject = subject;
-    this.callbackHandler = callbackHandler;
     principals.clear();
   }
 

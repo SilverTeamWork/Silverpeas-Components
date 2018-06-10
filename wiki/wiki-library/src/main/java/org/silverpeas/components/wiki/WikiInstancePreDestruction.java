@@ -27,21 +27,26 @@ package org.silverpeas.components.wiki;
 import org.silverpeas.core.admin.component.ComponentInstancePreDestruction;
 import org.silverpeas.core.util.logging.SilverLogger;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * Deletes all the Wiki pages that were created before the Wiki application instance is destructed.
  * @author mmoquillon
  */
+@Named
 public class WikiInstancePreDestruction implements ComponentInstancePreDestruction {
+
+  @Inject
+  private WikiInstanceManager instanceManager;
+
   @Override
   public void preDestroy(final String componentInstanceId) {
-    SilverWikiEngine.shutdown(componentInstanceId);
-    WikiSettings settings = new WikiSettings(componentInstanceId);
+    instanceManager.deleteWikiInstance(componentInstanceId);
     try {
-      Files.deleteIfExists(Paths.get(settings.getWikiHomePath()));
+      WikiSettings settings = new WikiSettings(componentInstanceId);
+      settings.cleanUp();
     } catch (IOException e) {
       SilverLogger.getLogger(this).error(e);
     }

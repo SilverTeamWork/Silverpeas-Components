@@ -26,7 +26,7 @@ package org.silverpeas.components.wiki.ui;
 
 import org.apache.wiki.WikiEngine;
 import org.apache.wiki.ui.TemplateManager;
-import org.silverpeas.components.wiki.WikiSettings;
+import org.silverpeas.components.wiki.SilverWikiEngine;
 
 import javax.servlet.ServletContext;
 import javax.servlet.jsp.PageContext;
@@ -69,7 +69,7 @@ public class WikiTemplateManager extends TemplateManager {
   private String fixTemplatePath(final String template) {
     String path = template;
     if (path.startsWith("/templates")) {
-      path = WikiSettings.WIKI_BASE_DIR + path;
+      path = ((SilverWikiEngine)this.m_engine).getTemplatePath(template);
     }
     return path;
   }

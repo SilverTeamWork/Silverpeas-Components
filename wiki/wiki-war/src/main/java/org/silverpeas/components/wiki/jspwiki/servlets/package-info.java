@@ -25,8 +25,8 @@
 /**
  * Provides servlets extending the JSPWiki's ones to avoid the initialization of the
  * {@link org.apache.wiki.WikiEngine} single instance in profit of our
- * {@link org.silverpeas.components.wiki.SilverWikiEngine} instances per each wiki application
- * instance.
+ * {@link org.silverpeas.components.wiki.SilverWikiEngine} single instance dedicated to
+ * motorize all the Wiki instances in Silverpeas.
  * @author mmoquillon
  */
 package org.silverpeas.components.wiki.jspwiki.servlets;
